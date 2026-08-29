@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Phase Vocoder — Voice Changer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="rack">
+
+  <header class="rack__header">
+    <div class="rack__title">
+      <span class="rack__eyebrow">STFT · 022</span>
+      <h1>Phase&nbsp;Vocoder</h1>
+      <p class="rack__subtitle">Independent pitch &amp; time-scale modification, without the chipmunk effect.</p>
+    </div>
+    <div class="rack__badge" id="statusBadge">
+      <span class="dot" id="statusDot"></span>
+      <span id="statusText">idle</span>
+    </div>
+  </header>
+
+  <main class="panels">
+
+    <!-- INPUT & CONTROL PANEL -->
+    <section class="panel panel--control">
+      <h2 class="panel__title">Input &amp; Control</h2>
+
+      <div class="dropzone" id="dropzone">
+        <input type="file" id="fileInput" accept="audio/*" hidden />
+        <p class="dropzone__label" id="dropzoneLabel">Drop a voice recording, or click to browse</p>
+        <p class="dropzone__hint">WAV / MP3 · mono or stereo</p>
+      </div>
+
+      <div class="control">
+        <div class="control__row">
+          <label for="pitchSlider">Pitch shift</label>
+          <span class="control__value mono" id="pitchValue">0 st</span>
+        </div>
+        <input type="range" id="pitchSlider" min="-12" max="12" step="1" value="0" />
+      </div>
+
+      <div class="control">
+        <div class="control__row">
+          <label for="timeSlider">Time scale</label>
+          <span class="control__value mono" id="timeValue">1.00×</span>
+        </div>
+        <input type="range" id="timeSlider" min="0.5" max="2.0" step="0.05" value="1.0" />
+      </div>
+
+      <div class="toggle-row">
+        <span>Naive resampling</span>
+        <label class="switch">
+          <input type="checkbox" id="modeToggle">
+          <span class="switch__track"><span class="switch__thumb"></span></span>
+        </label>
+        <span>Phase vocoder</span>
+      </div>
+
+      <button class="btn btn--primary" id="processBtn" disabled>Process audio</button>
+      <p class="control__note" id="errorNote"></p>
+    </section>
+
+    <!-- VISUALIZATION PANEL -->
+    <section class="panel panel--viz">
+      <h2 class="panel__title">Spectral Analysis</h2>
+      <div class="viz-grid">
+        <figure class="viz-card">
+          <figcaption>Original</figcaption>
+          <div class="viz-frame" id="frameOriginal"><span class="placeholder">waiting for audio</span><img id="specOriginal" alt="Original spectrogram" /></div>
+        </figure>
+        <figure class="viz-card">
+          <figcaption>Phase-corrected reconstruction</figcaption>
+          <div class="viz-frame" id="frameProcessed"><span class="placeholder">waiting for audio</span><img id="specProcessed" alt="Processed spectrogram" /></div>
+        </figure>
+        <figure class="viz-card">
+          <figcaption>Naive resampling (baseline)</figcaption>
+          <div class="viz-frame" id="frameNaive"><span class="placeholder">waiting for audio</span><img id="specNaive" alt="Naive spectrogram" /></div>
+        </figure>
+      </div>
+    </section>
+
+    <!-- OUTPUT & INSPECTION -->
+    <section class="panel panel--output">
+      <h2 class="panel__title">Output &amp; Inspection</h2>
+
+      <div class="ab-grid">
+        <div class="ab-card">
+          <span class="ab-card__label">Phase vocoder</span>
+          <audio id="playerProcessed" controls></audio>
+          <a class="btn btn--ghost" id="downloadProcessed" download="phase_vocoder_output.wav">Download WAV</a>
+        </div>
+        <div class="ab-card">
+          <span class="ab-card__label">Naive resampling</span>
+          <audio id="playerNaive" controls></audio>
+          <a class="btn btn--ghost" id="downloadNaive" download="naive_output.wav">Download WAV</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="rack__footer">
+    CSE 220 &middot; Team Fourier_and_Furious &middot; STFT analysis, phase unwrapping &amp; propagation, WOLA synthesis
+  </footer>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

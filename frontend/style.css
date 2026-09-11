@@ -20,11 +20,19 @@ body {
   margin: 0;
   background: var(--bg);
   background-image:
-    radial-gradient(circle at 15% 0%, rgba(82, 216, 196, 0.06), transparent 40%),
-    radial-gradient(circle at 85% 100%, rgba(242, 168, 63, 0.05), transparent 40%);
+    radial-gradient(circle at 15% 0%, rgba(82, 216, 196, 0.10), transparent 45%),
+    radial-gradient(circle at 85% 15%, rgba(242, 168, 63, 0.08), transparent 45%),
+    radial-gradient(circle at 50% 100%, rgba(120, 100, 240, 0.06), transparent 50%);
+  background-size: 200% 200%;
+  animation: drift 18s ease-in-out infinite;
   color: var(--text);
   font-family: var(--font-body);
   min-height: 100vh;
+}
+
+@keyframes drift {
+  0%, 100% { background-position: 0% 0%, 100% 0%, 50% 100%; }
+  50% { background-position: 10% 10%, 90% 20%, 55% 90%; }
 }
 
 .mono { font-family: var(--font-mono); }
@@ -61,6 +69,20 @@ body {
   font-weight: 700;
   margin: 4px 0 6px;
   letter-spacing: -0.01em;
+}
+
+.glow-text {
+  background: linear-gradient(90deg, var(--teal), var(--amber), var(--teal));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 6s linear infinite;
+  filter: drop-shadow(0 0 18px rgba(82, 216, 196, 0.25));
+}
+
+@keyframes shimmer {
+  to { background-position: 200% center; }
 }
 
 .rack__subtitle {
@@ -226,7 +248,10 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   width: 100%;
   text-align: center;
   padding: 12px 16px;
@@ -237,13 +262,17 @@ input[type="range"]::-moz-range-thumb {
   font-size: 14px;
   cursor: pointer;
   text-decoration: none;
-  transition: opacity 0.15s, transform 0.1s;
+  transition: opacity 0.15s, transform 0.1s, box-shadow 0.2s;
 }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn:not(:disabled):active { transform: scale(0.98); }
 .btn--primary {
   background: var(--teal);
   color: #0b1210;
+  box-shadow: 0 0 0 rgba(82, 216, 196, 0);
+}
+.btn--primary:not(:disabled):hover {
+  box-shadow: 0 0 24px rgba(82, 216, 196, 0.35);
 }
 .btn--ghost {
   background: transparent;
@@ -252,6 +281,72 @@ input[type="range"]::-moz-range-thumb {
   margin-top: 10px;
 }
 .btn--ghost:hover { color: var(--text); border-color: var(--text-muted); }
+
+.eq-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 14px;
+}
+.eq-bars span {
+  width: 3px;
+  background: #0b1210;
+  border-radius: 2px;
+  animation: eq-bounce 0.9s ease-in-out infinite;
+}
+.eq-bars span:nth-child(1) { height: 40%; animation-delay: 0s; }
+.eq-bars span:nth-child(2) { height: 80%; animation-delay: 0.1s; }
+.eq-bars span:nth-child(3) { height: 100%; animation-delay: 0.2s; }
+.eq-bars span:nth-child(4) { height: 60%; animation-delay: 0.3s; }
+.eq-bars span:nth-child(5) { height: 90%; animation-delay: 0.4s; }
+
+@keyframes eq-bounce {
+  0%, 100% { transform: scaleY(0.4); }
+  50% { transform: scaleY(1); }
+}
+
+/* ---------- Voice presets ---------- */
+.presets { margin: 20px 0; }
+.presets__label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+.presets__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.preset-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: var(--panel-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 4px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 11px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, box-shadow 0.15s, transform 0.1s;
+}
+.preset-btn__icon { font-size: 18px; }
+.preset-btn:hover {
+  border-color: var(--teal);
+  color: var(--text);
+  transform: translateY(-2px);
+}
+.preset-btn.active {
+  border-color: var(--teal);
+  color: var(--text);
+  box-shadow: 0 0 16px rgba(82, 216, 196, 0.3);
+  background: rgba(82, 216, 196, 0.08);
+}
 
 .control__note {
   color: var(--danger);

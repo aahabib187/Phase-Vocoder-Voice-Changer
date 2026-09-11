@@ -3,9 +3,10 @@ Flask API for the Phase Vocoder Voice Changer.
 
 POST /api/process
   form-data:
-    audio        - the input audio file (wav/mp3/etc)
-    semitones    - float, pitch shift in semitones (e.g. -12 to 12)
-    time_factor  - float, time-scale factor (e.g. 0.5 to 2.0)
+    audio           - the input audio file (wav/mp3/etc)
+    semitones       - float, pitch shift in semitones (e.g. -12 to 12)
+    time_factor     - float, time-scale factor (e.g. 0.5 to 2.0)
+    formant_factor  - float, formant shift factor (e.g. 0.6 to 1.6)
   returns JSON:
     {
       "sample_rate": int,
@@ -30,7 +31,7 @@ import soundfile as sf
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
-from phase_vocoder import process_audio
+from phase_vocoder import process_audio, VOICE_PRESETS
 
 app = Flask(__name__)
 CORS(app)
@@ -71,6 +72,7 @@ def process():
     file = request.files["audio"]
     semitones = float(request.form.get("semitones", 0))
     time_factor = float(request.form.get("time_factor", 1.0))
+    formant_factor = float(request.form.get("formant_factor", 1.0))
 
     try:
         x, sr = librosa.load(file, sr=TARGET_SR, mono=True)
@@ -80,7 +82,7 @@ def process():
     if len(x) == 0:
         return jsonify({"error": "empty audio"}), 400
 
-    pv_result, naive_result = process_audio(x, semitones, time_factor)
+    pv_result, naive_result = process_audio(x, semitones, time_factor, formant_factor)
 
     response = {
         "sample_rate": sr,
@@ -91,6 +93,11 @@ def process():
         "naive_spectrogram_base64": spectrogram_png_base64(naive_result, sr, "Naive Resampling (baseline)"),
     }
     return jsonify(response)
+
+
+@app.route("/api/presets", methods=["GET"])
+def presets():
+    return jsonify(VOICE_PRESETS)
 
 
 @app.route("/api/health", methods=["GET"])

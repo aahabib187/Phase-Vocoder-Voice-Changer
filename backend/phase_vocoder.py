@@ -124,15 +124,17 @@ def pitch_shift_phase_vocoder(x: np.ndarray, semitones: float,
     Shift pitch by `semitones` while keeping duration constant.
 
     Trick: stretch time by the pitch ratio (changes pitch AND duration together,
-    but phase-coherently), then resample back to the original duration (which
-    changes pitch again, in the opposite direction, cancelling the duration change
-    but compounding the pitch change). Net effect: pitch changes, duration doesn't.
+    but phase-coherently -- the audio becomes `pitch_ratio` times LONGER, same
+    pitch), then resample by the SAME ratio (reading through it `pitch_ratio`
+    times faster). That compression brings the duration back down to the
+    original AND multiplies every frequency by `pitch_ratio` again. Net effect:
+    pitch changes by `pitch_ratio`, duration stays the same.
     """
     if semitones == 0:
         return x.copy()
     pitch_ratio = 2 ** (semitones / 12.0)
     stretched = phase_vocoder_stretch(x, pitch_ratio, frame_size, hop_analysis)
-    result = resample_linear(stretched, 1.0 / pitch_ratio)
+    result = resample_linear(stretched, pitch_ratio)
     # trim/pad to match original length so playback duration is unchanged
     if len(result) > len(x):
         result = result[:len(x)]
@@ -161,19 +163,84 @@ def naive_pitch_shift(x: np.ndarray, semitones: float) -> np.ndarray:
     return resample_linear(x, pitch_ratio)
 
 
+def compute_spectral_envelope(magnitude: np.ndarray, frame_size: int, lifter_cutoff: int = 30) -> np.ndarray:
+    """
+    Estimate the smooth spectral envelope (formant structure) of a single magnitude
+    spectrum via cepstral liftering: low quefrency cepstral coefficients correspond
+    to the slow-varying envelope, while high quefrency ones correspond to fine
+    harmonic structure (pitch). Keeping only the low ones and transforming back
+    gives a smooth envelope with the pitch harmonics averaged out.
+    """
+    log_mag = np.log(magnitude + 1e-8)
+    cepstrum = np.fft.irfft(log_mag, n=frame_size)
+    lifter = np.zeros_like(cepstrum)
+    lifter[:lifter_cutoff] = 1.0
+    lifter[-(lifter_cutoff - 1):] = 1.0
+    liftered = cepstrum * lifter
+    envelope_log = np.fft.rfft(liftered, n=frame_size).real
+    return np.exp(envelope_log)
+
+
+def formant_shift(x: np.ndarray, factor: float, frame_size: int = 2048,
+                   hop_size: int = 512, lifter_cutoff: int = 30) -> np.ndarray:
+    """
+    Shift formants (vocal tract resonances) by `factor` WITHOUT changing pitch.
+
+    factor > 1 -> resonances move up in frequency -> smaller-vocal-tract feel (kid/female-ish)
+    factor < 1 -> resonances move down -> larger-vocal-tract feel (male-ish/monster)
+
+    Method: for each frame, separate magnitude into (smooth envelope) x (residual
+    harmonic fine structure) via cepstral liftering. Warp only the envelope's
+    frequency axis, then recombine with the untouched residual -- this moves
+    "where the resonant peaks are" without moving "where the pitch harmonics are",
+    which is exactly what keeps pitch and timbre independent.
+    """
+    if factor == 1.0:
+        return x.copy()
+
+    frames = stft(x, frame_size, hop_size)
+    magnitude = np.abs(frames)
+    phase = np.angle(frames)
+    n_frames, n_bins = magnitude.shape
+    bin_idx = np.arange(n_bins)
+
+    new_magnitude = np.empty_like(magnitude)
+    for i in range(n_frames):
+        mag = magnitude[i]
+        envelope = compute_spectral_envelope(mag, frame_size, lifter_cutoff)
+        residual = mag / (envelope + 1e-8)
+        warped_idx = bin_idx / factor
+        warped_envelope = np.interp(warped_idx, bin_idx, envelope, left=envelope[0], right=envelope[-1])
+        new_magnitude[i] = residual * warped_envelope
+
+    new_frames = new_magnitude * np.exp(1j * phase)
+    return istft_overlap_add(new_frames, frame_size, hop_size)
+
+
+# Named voice-character presets: (semitones, time_factor, formant_factor)
+VOICE_PRESETS = {
+    "male":   {"semitones": -6, "time_factor": 1.0,  "formant_factor": 0.80},
+    "female": {"semitones": 8,  "time_factor": 1.0,  "formant_factor": 1.30},
+    "kid":    {"semitones": 10, "time_factor": 1.08, "formant_factor": 1.45},
+    "robot":  {"semitones": -12, "time_factor": 1.0, "formant_factor": 0.65},
+}
+
+
 def process_audio(x: np.ndarray, semitones: float, time_factor: float,
+                   formant_factor: float = 1.0,
                    frame_size: int = 2048, hop_analysis: int = 512):
     """
     Full pipeline used by the API: returns (phase_vocoder_result, naive_result).
-    Combined pitch + time-scale modification via the phase vocoder, plus the
-    naive resampling baseline for comparison (naive only supports pitch,
-    since naive time-stretch-without-pitch-change isn't meaningfully definable).
+    Combined pitch + time-scale + formant modification via the phase vocoder,
+    plus the naive resampling baseline for comparison.
     """
     pv = x.copy()
     if time_factor != 1.0:
         pv = time_stretch_phase_vocoder(pv, time_factor, frame_size, hop_analysis)
     if semitones != 0:
         pv = pitch_shift_phase_vocoder(pv, semitones, frame_size, hop_analysis)
+    if formant_factor != 1.0:
+        pv = formant_shift(pv, formant_factor, frame_size, hop_analysis)
 
     naive = naive_pitch_shift(x, semitones)
     return pv, naive

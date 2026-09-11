@@ -1,4 +1,6 @@
-const API_BASE = "http://localhost:5000";
+const API_BASE = window.location.origin && window.location.origin.startsWith("http")
+  ? window.location.origin
+  : "http://localhost:5000";
 
 const dropzone = document.getElementById("dropzone");
 const dropzoneLabel = document.getElementById("dropzoneLabel");

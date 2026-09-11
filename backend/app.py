@@ -28,13 +28,21 @@ import numpy as np
 import librosa
 import librosa.display
 import soundfile as sf
-from flask import Flask, request, jsonify
+import os
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
 from phase_vocoder import process_audio, VOICE_PRESETS
 
-app = Flask(__name__)
+FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
+
+app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path="")
 CORS(app)
+
+
+@app.route("/")
+def index():
+    return send_from_directory(FRONTEND_DIR, "index.html")
 
 TARGET_SR = 22050  # keep processing fast; plenty for voice
 

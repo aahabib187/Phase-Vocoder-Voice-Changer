@@ -53,9 +53,13 @@ def istft_overlap_add(frames: np.ndarray, frame_size: int, hop_size: int) -> np.
         output[start:start + frame_size] += windowed
         window_sum[start:start + frame_size] += window ** 2
 
-    # normalize by the summed window energy to correct for overlap-add gain
-    nonzero = window_sum > 1e-8
+    # normalize by the summed window energy to correct for overlap-add gain.
+    # Use a relative threshold to avoid boundary division-by-near-zero spikes
+    # that distort peak amplitude and make normalized audio too quiet.
+    threshold = 1e-2 * np.max(window_sum) if len(window_sum) > 0 else 1e-8
+    nonzero = window_sum > threshold
     output[nonzero] /= window_sum[nonzero]
+    output[~nonzero] = 0.0
     return output
 
 
@@ -145,22 +149,30 @@ def pitch_shift_phase_vocoder(x: np.ndarray, semitones: float,
 
 def time_stretch_phase_vocoder(x: np.ndarray, time_factor: float,
                                 frame_size: int = 2048, hop_analysis: int = 512) -> np.ndarray:
-    """Change tempo by time_factor (>1 slower, <1 faster) without changing pitch."""
-    if time_factor == 1.0:
-        return x.copy()
-    return phase_vocoder_stretch(x, time_factor, frame_size, hop_analysis)
-
-
-def naive_pitch_shift(x: np.ndarray, semitones: float) -> np.ndarray:
     """
-    Baseline: plain resampling. This is the 'chipmunk effect' -- pitch and
+    Change playback tempo/speed by time_factor (>1 faster, <1 slower) without changing pitch.
+    Signal logic: time_factor is playback speed multiplier.
+      time_factor = 1.45 -> 1.45x faster (duration becomes T / 1.45).
+      time_factor = 0.75 -> 0.75x speed (duration becomes T / 0.75).
+    In the phase vocoder, stretch_factor = 1.0 / time_factor.
+    """
+    if time_factor == 1.0 or time_factor <= 0:
+        return x.copy()
+    stretch_factor = 1.0 / time_factor
+    return phase_vocoder_stretch(x, stretch_factor, frame_size, hop_analysis)
+
+
+def naive_pitch_shift(x: np.ndarray, semitones: float, time_factor: float = 1.0) -> np.ndarray:
+    """
+    Baseline: plain resampling (tape-speed method). This is the 'chipmunk effect' -- pitch and
     duration change together because there's no phase correction, just a
     change in playback rate. Included for the required A/B comparison.
     """
-    if semitones == 0:
-        return x.copy()
     pitch_ratio = 2 ** (semitones / 12.0)
-    return resample_linear(x, pitch_ratio)
+    total_rate = pitch_ratio * time_factor
+    if np.isclose(total_rate, 1.0):
+        return x.copy()
+    return resample_linear(x, total_rate)
 
 
 def compute_spectral_envelope(magnitude: np.ndarray, frame_size: int, lifter_cutoff: int = 30) -> np.ndarray:
@@ -242,5 +254,5 @@ def process_audio(x: np.ndarray, semitones: float, time_factor: float,
     if formant_factor != 1.0:
         pv = formant_shift(pv, formant_factor, frame_size, hop_analysis)
 
-    naive = naive_pitch_shift(x, semitones)
+    naive = naive_pitch_shift(x, semitones, time_factor)
     return pv, naive

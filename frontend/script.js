@@ -10,8 +10,6 @@ const pitchSlider = document.getElementById("pitchSlider");
 const pitchValue = document.getElementById("pitchValue");
 const timeSlider = document.getElementById("timeSlider");
 const timeValue = document.getElementById("timeValue");
-const formantSlider = document.getElementById("formantSlider");
-const formantValue = document.getElementById("formantValue");
 const presetButtons = document.querySelectorAll(".preset-btn");
 const processBtn = document.getElementById("processBtn");
 const eqBars = document.getElementById("eqBars");
@@ -50,24 +48,17 @@ function updateTimeLabel() {
   timeValue.textContent = `${v.toFixed(2)}×`;
 }
 
-function updateFormantLabel() {
-  const v = parseFloat(formantSlider.value);
-  formantValue.textContent = `${v.toFixed(2)}×`;
-}
-
 pitchSlider.addEventListener("input", () => { updatePitchLabel(); clearActivePreset(); });
 timeSlider.addEventListener("input", () => { updateTimeLabel(); clearActivePreset(); });
-formantSlider.addEventListener("input", () => { updateFormantLabel(); clearActivePreset(); });
 updatePitchLabel();
 updateTimeLabel();
-updateFormantLabel();
 
 // ---- Voice presets ----
 const VOICE_PRESETS = {
-  male:   { semitones: -6, time_factor: 1.0,  formant_factor: 0.80 },
-  female: { semitones: 8,  time_factor: 1.0,  formant_factor: 1.30 },
-  kid:    { semitones: 10, time_factor: 1.08, formant_factor: 1.45 },
-  robot:  { semitones: -12, time_factor: 1.0, formant_factor: 0.65 },
+  male:   { semitones: -6, time_factor: 1.0 },
+  female: { semitones: 8,  time_factor: 1.0 },
+  kid:    { semitones: 10, time_factor: 1.08 },
+  robot:  { semitones: -12, time_factor: 1.0 },
 };
 
 function clearActivePreset() {
@@ -80,10 +71,8 @@ presetButtons.forEach((btn) => {
     if (!preset) return;
     pitchSlider.value = preset.semitones;
     timeSlider.value = preset.time_factor;
-    formantSlider.value = preset.formant_factor;
     updatePitchLabel();
     updateTimeLabel();
-    updateFormantLabel();
     clearActivePreset();
     btn.classList.add("active");
   });
@@ -141,7 +130,6 @@ processBtn.addEventListener("click", async () => {
   formData.append("audio", selectedFile);
   formData.append("semitones", pitchSlider.value);
   formData.append("time_factor", timeSlider.value);
-  formData.append("formant_factor", formantSlider.value);
 
   try {
     const res = await fetch(`${API_BASE}/api/process`, {

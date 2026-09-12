@@ -370,7 +370,7 @@
     <div>
       <p class="kicker">Team Fourier &amp; Furious</p>
       <h1>Phase Vocoder</h1>
-      <p class="tagline">Independent pitch, time-scale, and formant control — without the chipmunk effect.</p>
+      <p class="tagline">Independent pitch &amp; time-scale control — without the chipmunk effect.</p>
     </div>
     <div class="status"><span class="dot" id="status-dot"></span><span id="status-text">idle</span></div>
   </div>
@@ -399,11 +399,6 @@
       <div class="fader">
         <div class="fader-head"><span class="fader-label">Time scale</span><span class="lcd" id="lcd-time">1.00×</span></div>
         <div class="track"><div class="track-fill" id="fill-time"></div><input id="in-time" type="range" min="50" max="200" value="100" step="1" aria-label="Time scale factor"></div>
-      </div>
-
-      <div class="fader">
-        <div class="fader-head"><span class="fader-label">Formant shift</span><span class="lcd" id="lcd-formant">1.00×</span></div>
-        <div class="track"><div class="track-fill" id="fill-formant"></div><input id="in-formant" type="range" min="50" max="200" value="100" step="1" aria-label="Formant shift factor"></div>
       </div>
 
       <div class="presets">
@@ -552,14 +547,13 @@ function bindFader(id, lcdId, fillId, fmt) {
 }
 bindFader('in-pitch', 'lcd-pitch', 'fill-pitch', (v) => (v > 0 ? '+' : '') + v + ' st');
 bindFader('in-time', 'lcd-time', 'fill-time', (v) => (v / 100).toFixed(2) + '×');
-bindFader('in-formant', 'lcd-formant', 'fill-formant', (v) => (v / 100).toFixed(2) + '×');
 
 // ---------- presets ----------
 const presetValues = {
-  male:   { pitch: -6, time: 100, formant: 80 },
-  female: { pitch: 8,  time: 100, formant: 130 },
-  kid:    { pitch: 10, time: 108, formant: 145 },
-  robot:  { pitch: -12, time: 100, formant: 65 }
+  male:   { pitch: -6, time: 100 },
+  female: { pitch: 8,  time: 100 },
+  kid:    { pitch: 10, time: 108 },
+  robot:  { pitch: -12, time: 100 }
 };
 
 function clearActivePreset() {
@@ -573,10 +567,8 @@ document.querySelectorAll('.preset').forEach((btn) => {
     const p = presetValues[btn.dataset.p];
     document.getElementById('in-pitch').value = p.pitch;
     document.getElementById('in-time').value = p.time;
-    document.getElementById('in-formant').value = p.formant;
     document.getElementById('in-pitch').dispatchEvent(new Event('input'));
     document.getElementById('in-time').dispatchEvent(new Event('input'));
-    document.getElementById('in-formant').dispatchEvent(new Event('input'));
   });
 });
 
@@ -686,13 +678,11 @@ processBtn.addEventListener('click', async () => {
 
   const semitones = document.getElementById('in-pitch').value;
   const timeFactor = (parseFloat(document.getElementById('in-time').value) / 100).toString();
-  const formantFactor = (parseFloat(document.getElementById('in-formant').value) / 100).toString();
 
   const formData = new FormData();
   formData.append('audio', selectedFile);
   formData.append('semitones', semitones);
   formData.append('time_factor', timeFactor);
-  formData.append('formant_factor', formantFactor);
 
   try {
     const res = await fetch(API_BASE + '/api/process', { method: 'POST', body: formData });

@@ -262,27 +262,74 @@
     text-align:center;
   }
 
-  /* ---------- analysis screen ---------- */
-  .screen-wrap{position:relative;overflow:hidden;}
-  .screen-tabs{
-    display:flex;gap:22px;margin-bottom:18px;
+  /* ---------- playback panel (replaces old spectral-analysis-with-tabs panel) ---------- */
+  .playback-list{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
   }
-  .tab{
-    background:none;border:none;
-    font-family:'Manrope',sans-serif;
-    font-size:13px;color:var(--paper-faint);
-    padding:0 0 10px;cursor:pointer;
-    border-bottom:2px solid transparent;
+  .strip{
+    background:var(--screen-bg);
+    border:1px solid var(--panel-border);
+    border-radius:var(--radius-md);
+    padding:16px 18px;
+    transition:opacity .2s ease;
   }
-  .tab.active{color:var(--paper);border-color:var(--brass);}
+  .strip.locked{opacity:.4;pointer-events:none;}
+  .strip-head{
+    display:flex;justify-content:space-between;align-items:baseline;
+    margin-bottom:12px;
+  }
+  .strip-title{font-size:13.5px;color:var(--paper);}
+  .strip-tag{font-family:'Space Mono',monospace;font-size:10px;color:var(--paper-faint);}
+  .waveform{
+    display:flex;align-items:flex-end;gap:2px;height:28px;margin-bottom:12px;
+  }
+  .waveform span{
+    flex:1;background:var(--brass-dim);border-radius:1px;
+  }
+  .transport{display:flex;align-items:center;gap:12px;}
+  .play-btn{
+    width:30px;height:30px;border-radius:50%;flex:none;
+    border:1px solid var(--brass-dim);background:transparent;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+  }
+  .play-btn svg{width:10px;height:10px;fill:var(--brass);margin-left:1px;}
+  .seek{flex:1;height:2px;background:var(--panel-border);border-radius:1px;position:relative;cursor:pointer;}
+  .seek i{position:absolute;left:0;top:0;height:100%;width:0%;background:var(--brass-dim);border-radius:1px;pointer-events:none;}
+  .time{font-family:'Space Mono',monospace;font-size:10.5px;color:var(--paper-faint);white-space:nowrap;}
+  .dl-row{margin-top:10px;}
+  .dl{
+    width:100%;padding:9px;border-radius:var(--radius-sm);
+    background:transparent;border:1px solid var(--panel-border);
+    color:var(--paper-dim);font-family:'Manrope',sans-serif;font-size:12px;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;
+    transition:border-color .15s ease,color .15s ease;
+    text-decoration:none;
+  }
+  .dl:hover{border-color:var(--brass-dim);color:var(--paper);}
+  .dl svg{width:11px;height:11px;stroke:currentColor;}
+
+  /* ---------- spectrogram row (three graphs side by side) ---------- */
+  .viz-row{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:16px;
+  }
+  @media (max-width:880px){ .viz-row{grid-template-columns:1fr;} }
+  .viz-card-title{
+    font-size:12.5px;
+    color:var(--paper-dim);
+    margin:0 0 10px;
+  }
   .screen{
     background:var(--screen-bg);
     border:1px solid #000;
     border-radius:var(--radius-md);
     box-shadow:inset 0 3px 14px rgba(0,0,0,.7), inset 0 0 50px rgba(211,160,89,.05);
-    padding:14px 14px 10px;
+    padding:10px 10px 8px;
     position:relative;
-    min-height:300px;
+    min-height:190px;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -294,67 +341,19 @@
     background:repeating-linear-gradient(180deg,rgba(255,255,255,.02) 0px,rgba(255,255,255,.02) 1px,transparent 1px,transparent 3px);
     pointer-events:none;
   }
-  #spectro-img{display:none;width:100%;height:auto;border-radius:6px;}
-  #spectro-img.visible{display:block;}
+  .screen img{display:none;width:100%;height:auto;border-radius:6px;}
+  .screen img.visible{display:block;}
   .screen-placeholder{
     font-family:'Space Mono',monospace;
-    font-size:12px;
+    font-size:11px;
     color:var(--paper-faint);
   }
   .screen-caption{
     display:flex;justify-content:space-between;
     font-family:'Space Mono',monospace;
-    font-size:10.5px;color:var(--paper-faint);
-    margin-top:10px;
+    font-size:10px;color:var(--paper-faint);
+    margin-top:8px;
   }
-
-  /* ---------- output rack ---------- */
-  .output{
-    display:grid;grid-template-columns:1fr 1fr;gap:20px;
-  }
-  @media (max-width:720px){ .output{grid-template-columns:1fr;} }
-  .strip{
-    background:var(--panel);
-    border:1px solid var(--panel-border);
-    border-radius:var(--radius-lg);
-    padding:22px 24px;
-    box-shadow:0 8px 22px rgba(0,0,0,.28);
-    transition:opacity .2s ease;
-  }
-  .strip.locked{opacity:.4;pointer-events:none;}
-  .strip-head{
-    display:flex;justify-content:space-between;align-items:baseline;
-    margin-bottom:16px;
-  }
-  .strip-title{font-size:14px;color:var(--paper);}
-  .strip-tag{font-family:'Space Mono',monospace;font-size:10.5px;color:var(--paper-faint);}
-  .waveform{
-    display:flex;align-items:flex-end;gap:2px;height:38px;margin-bottom:16px;
-  }
-  .waveform span{
-    flex:1;background:var(--brass-dim);border-radius:1px;
-  }
-  .strip.dim .waveform span{background:var(--panel-border);}
-  .transport{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
-  .play-btn{
-    width:34px;height:34px;border-radius:50%;flex:none;
-    border:1px solid var(--brass-dim);background:transparent;
-    display:flex;align-items:center;justify-content:center;cursor:pointer;
-  }
-  .play-btn svg{width:11px;height:11px;fill:var(--brass);margin-left:1px;}
-  .seek{flex:1;height:2px;background:var(--panel-border);border-radius:1px;position:relative;cursor:pointer;}
-  .seek i{position:absolute;left:0;top:0;height:100%;width:0%;background:var(--brass-dim);border-radius:1px;pointer-events:none;}
-  .time{font-family:'Space Mono',monospace;font-size:11px;color:var(--paper-faint);white-space:nowrap;}
-  .dl{
-    width:100%;padding:11px;border-radius:var(--radius-sm);
-    background:transparent;border:1px solid var(--panel-border);
-    color:var(--paper-dim);font-family:'Manrope',sans-serif;font-size:13px;
-    cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
-    transition:border-color .15s ease,color .15s ease;
-    text-decoration:none;
-  }
-  .dl:hover{border-color:var(--brass-dim);color:var(--paper);}
-  .dl svg{width:12px;height:12px;stroke:currentColor;}
 
   footer{
     margin-top:44px;padding-top:20px;
@@ -393,14 +392,17 @@
 
       <div class="fader">
         <div class="fader-head"><span class="fader-label">Pitch shift</span><span class="lcd" id="lcd-pitch">0 st</span></div>
-        <div class="track"><div class="track-fill" id="fill-pitch"></div><input id="in-pitch" type="range" min="-12" max="12" value="0" step="1" aria-label="Pitch shift in semitones"></div>
+        <div class="track"><div class="track-fill" id="fill-pitch"></div><input id="in-pitch" type="range" min="-12" max="12" value="0" step="0.1" aria-label="Pitch shift in semitones"></div>
       </div>
 
       <div class="fader">
         <div class="fader-head"><span class="fader-label">Time scale</span><span class="lcd" id="lcd-time">1.00×</span></div>
         <div class="track"><div class="track-fill" id="fill-time"></div><input id="in-time" type="range" min="50" max="200" value="100" step="1" aria-label="Time scale factor"></div>
       </div>
-
+<div class="fader">
+  <div class="fader-head"><span class="fader-label">Formant shift</span><span class="lcd" id="lcd-formant">1.00×</span></div>
+  <div class="track"><div class="track-fill" id="fill-formant"></div><input id="in-formant" type="range" min="50" max="200" value="100" step="1" aria-label="Formant shift factor"></div>
+</div>
       <div class="presets">
         <p class="presets-label">Voice presets</p>
         <div class="preset-row">
@@ -423,49 +425,84 @@
       <p class="error-note" id="error-note"></p>
     </div>
 
-    <div class="panel screen-wrap">
-      <p class="panel-label">Spectral analysis</p>
-      <div class="screen-tabs">
-        <button class="tab active" data-tab="original">Original</button>
-        <button class="tab" data-tab="corrected">Phase-corrected</button>
-        <button class="tab" data-tab="naive">Naive resampling</button>
+    <div class="panel">
+      <p class="panel-label">Playback</p>
+      <div class="playback-list">
+
+        <div class="strip locked" id="strip-original">
+          <div class="strip-head"><span class="strip-title">Original</span><span class="strip-tag" id="tag-original">—</span></div>
+          <div class="waveform" id="wave-original"></div>
+          <div class="transport">
+            <button class="play-btn" id="play-original" aria-label="Play original audio"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8V4z"/></svg></button>
+            <div class="seek" id="seek-original"><i id="seek-fill-original"></i></div>
+            <span class="time" id="time-original">0:00 / 0:00</span>
+          </div>
+        </div>
+
+        <div class="strip locked" id="strip-naive">
+          <div class="strip-head"><span class="strip-title">Naive resampled</span><span class="strip-tag" id="tag-naive">—</span></div>
+          <div class="waveform" id="wave-naive"></div>
+          <div class="transport">
+            <button class="play-btn" id="play-naive" aria-label="Play naive resampling output"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8V4z"/></svg></button>
+            <div class="seek" id="seek-naive"><i id="seek-fill-naive"></i></div>
+            <span class="time" id="time-naive">0:00 / 0:00</span>
+          </div>
+          <div class="dl-row"><a class="dl" id="dl-naive" download="naive_output.wav"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>Download WAV</a></div>
+        </div>
+
+        <div class="strip locked" id="strip-processed">
+          <div class="strip-head"><span class="strip-title">Phase vocoder</span><span class="strip-tag" id="tag-processed">—</span></div>
+          <div class="waveform" id="wave-processed"></div>
+          <div class="transport">
+            <button class="play-btn" id="play-processed" aria-label="Play phase vocoder output"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8V4z"/></svg></button>
+            <div class="seek" id="seek-processed"><i id="seek-fill-processed"></i></div>
+            <span class="time" id="time-processed">0:00 / 0:00</span>
+          </div>
+          <div class="dl-row"><a class="dl" id="dl-processed" download="phase_vocoder_output.wav"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>Download WAV</a></div>
+        </div>
+
       </div>
-      <div class="screen">
-        <img id="spectro-img" alt="Spectrogram">
-        <span class="screen-placeholder" id="screen-placeholder">waiting for audio</span>
-      </div>
-      <div class="screen-caption"><span>0 – Nyquist</span><span id="screen-note">STFT · phase-locked reconstruction</span><span id="screen-sr">—</span></div>
     </div>
 
   </div>
 
-  <div class="output">
-    <div class="strip locked" id="strip-processed">
-      <div class="strip-head"><span class="strip-title">Phase vocoder</span><span class="strip-tag" id="tag-processed">—</span></div>
-      <div class="waveform" id="wave-processed"></div>
-      <div class="transport">
-        <button class="play-btn" id="play-processed" aria-label="Play phase vocoder output"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8V4z"/></svg></button>
-        <div class="seek" id="seek-processed"><i id="seek-fill-processed"></i></div>
-        <span class="time" id="time-processed">0:00 / 0:00</span>
+  <div class="panel">
+    <p class="panel-label">Spectral analysis</p>
+    <div class="viz-row">
+
+      <div id="viz-original">
+        <p class="viz-card-title">Original</p>
+        <div class="screen">
+          <img id="spectro-original" alt="Original spectrogram">
+          <span class="screen-placeholder">waiting for audio</span>
+        </div>
       </div>
-      <a class="dl" id="dl-processed" download="phase_vocoder_output.wav"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>Download WAV</a>
-    </div>
-    <div class="strip dim locked" id="strip-naive">
-      <div class="strip-head"><span class="strip-title">Naive resampling</span><span class="strip-tag" id="tag-naive">—</span></div>
-      <div class="waveform" id="wave-naive"></div>
-      <div class="transport">
-        <button class="play-btn" id="play-naive" aria-label="Play naive resampling output"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8V4z"/></svg></button>
-        <div class="seek" id="seek-naive"><i id="seek-fill-naive"></i></div>
-        <span class="time" id="time-naive">0:00 / 0:00</span>
+
+      <div id="viz-naive">
+        <p class="viz-card-title">Naive resampling</p>
+        <div class="screen">
+          <img id="spectro-naive" alt="Naive resampling spectrogram">
+          <span class="screen-placeholder">waiting for audio</span>
+        </div>
       </div>
-      <a class="dl" id="dl-naive" download="naive_output.wav"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>Download WAV</a>
+
+      <div id="viz-processed">
+        <p class="viz-card-title">Phase-corrected</p>
+        <div class="screen">
+          <img id="spectro-processed" alt="Phase vocoder spectrogram">
+          <span class="screen-placeholder">waiting for audio</span>
+        </div>
+      </div>
+
     </div>
+    <div class="screen-caption"><span>0 – Nyquist</span><span>STFT · phase-locked reconstruction</span><span id="screen-sr">—</span></div>
   </div>
 
   <footer>Baseline vs. phase-locked reconstruction, benchmarked on STFT analysis, phase unwrapping and propagation, and WOLA synthesis.</footer>
 
 </div>
 
+<audio id="audio-original" preload="auto"></audio>
 <audio id="audio-processed" preload="auto"></audio>
 <audio id="audio-naive" preload="auto"></audio>
 
@@ -485,16 +522,13 @@ const processBtn = document.getElementById('process-btn');
 const processLabel = document.getElementById('process-label');
 const errorNote = document.getElementById('error-note');
 
-const spectroImg = document.getElementById('spectro-img');
-const screenPlaceholder = document.getElementById('screen-placeholder');
-const screenNote = document.getElementById('screen-note');
 const screenSr = document.getElementById('screen-sr');
 
 const compareSwitch = document.getElementById('compare-switch');
 const stripNaive = document.getElementById('strip-naive');
+const vizNaive = document.getElementById('viz-naive');
 
 let selectedFile = null;
-let lastResult = null; // holds base64 spectrograms + audio urls after processing
 
 // ---------- status ----------
 function setStatus(state, label) {
@@ -525,6 +559,14 @@ function handleFile(file) {
   slotMeta.textContent = (file.size / 1024).toFixed(0) + ' KB · ' + (file.type || 'audio');
   processBtn.disabled = false;
   errorNote.textContent = '';
+
+  // original audio can play immediately, no server round-trip needed
+  const originalUrl = URL.createObjectURL(file);
+  const audioOriginal = document.getElementById('audio-original');
+  audioOriginal.src = originalUrl;
+  document.getElementById('tag-original').textContent = 'SOURCE';
+  document.getElementById('strip-original').classList.remove('locked');
+  drawRealWaveform(originalUrl, 'wave-original');
 }
 
 function showError(msg) {
@@ -547,13 +589,14 @@ function bindFader(id, lcdId, fillId, fmt) {
 }
 bindFader('in-pitch', 'lcd-pitch', 'fill-pitch', (v) => (v > 0 ? '+' : '') + v + ' st');
 bindFader('in-time', 'lcd-time', 'fill-time', (v) => (v / 100).toFixed(2) + '×');
+bindFader('in-formant', 'lcd-formant', 'fill-formant', (v) => (v / 100).toFixed(2) + '×');
 
 // ---------- presets ----------
 const presetValues = {
-  male:   { pitch: -6, time: 100 },
-  female: { pitch: 8,  time: 100 },
-  kid:    { pitch: 10, time: 108 },
-  robot:  { pitch: -12, time: 100 }
+  male:   { pitch: -6, time: 100, formant: 80 },
+  female: { pitch: 8,  time: 100, formant: 130 },
+  kid:    { pitch: 10, time: 108, formant: 145 },
+  robot:  { pitch: -12, time: 100, formant: 65 }
 };
 
 function clearActivePreset() {
@@ -567,28 +610,19 @@ document.querySelectorAll('.preset').forEach((btn) => {
     const p = presetValues[btn.dataset.p];
     document.getElementById('in-pitch').value = p.pitch;
     document.getElementById('in-time').value = p.time;
+     document.getElementById('in-formant').value = p.formant;
     document.getElementById('in-pitch').dispatchEvent(new Event('input'));
     document.getElementById('in-time').dispatchEvent(new Event('input'));
+    document.getElementById('in-formant').dispatchEvent(new Event('input'));
   });
 });
 
-// ---------- compare switch ----------
+// ---------- compare switch: hides/shows naive playback + naive spectrogram together ----------
 compareSwitch.addEventListener('click', () => {
   compareSwitch.classList.toggle('on');
-  stripNaive.style.display = compareSwitch.classList.contains('on') ? '' : 'none';
-});
-
-// ---------- spectrogram tabs ----------
-document.querySelectorAll('.tab').forEach((tab) => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
-    tab.classList.add('active');
-    if (!lastResult) return;
-    const key = { original: 'original_spectrogram_base64', corrected: 'processed_spectrogram_base64', naive: 'naive_spectrogram_base64' }[tab.dataset.tab];
-    const noteMap = { original: 'STFT · original signal', corrected: 'STFT · phase-locked reconstruction', naive: 'Naive resampling · smeared harmonics' };
-    spectroImg.src = 'data:image/png;base64,' + lastResult[key];
-    screenNote.textContent = noteMap[tab.dataset.tab];
-  });
+  const show = compareSwitch.classList.contains('on');
+  stripNaive.style.display = show ? '' : 'none';
+  vizNaive.style.display = show ? '' : 'none';
 });
 
 // ---------- audio helpers ----------
@@ -608,7 +642,7 @@ function formatTime(sec) {
   return m + ':' + (s < 10 ? '0' : '') + s;
 }
 
-function wireTransport(audioEl, playBtnId, seekId, seekFillId, timeId, waveId) {
+function wireTransport(audioEl, playBtnId, seekId, seekFillId, timeId) {
   const playBtn = document.getElementById(playBtnId);
   const seek = document.getElementById(seekId);
   const seekFill = document.getElementById(seekFillId);
@@ -643,7 +677,7 @@ async function drawRealWaveform(audioUrl, waveId) {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const audioBuffer = await ctx.decodeAudioData(arrBuf.slice(0));
     const data = audioBuffer.getChannelData(0);
-    const bars = 64;
+    const bars = 48;
     const blockSize = Math.floor(data.length / bars);
     const el = document.getElementById(waveId);
     let html = '';
@@ -654,7 +688,7 @@ async function drawRealWaveform(audioUrl, waveId) {
         const v = Math.abs(data[start + j] || 0);
         if (v > peak) peak = v;
       }
-      const h = Math.max(3, Math.round(peak * 36));
+      const h = Math.max(3, Math.round(peak * 26));
       html += '<span style="height:' + h + 'px"></span>';
     }
     el.innerHTML = html;
@@ -664,8 +698,9 @@ async function drawRealWaveform(audioUrl, waveId) {
   }
 }
 
-wireTransport(document.getElementById('audio-processed'), 'play-processed', 'seek-processed', 'seek-fill-processed', 'time-processed', 'wave-processed');
-wireTransport(document.getElementById('audio-naive'), 'play-naive', 'seek-naive', 'seek-fill-naive', 'time-naive', 'wave-naive');
+wireTransport(document.getElementById('audio-original'), 'play-original', 'seek-original', 'seek-fill-original', 'time-original');
+wireTransport(document.getElementById('audio-processed'), 'play-processed', 'seek-processed', 'seek-fill-processed', 'time-processed');
+wireTransport(document.getElementById('audio-naive'), 'play-naive', 'seek-naive', 'seek-fill-naive', 'time-naive');
 
 // ---------- process ----------
 processBtn.addEventListener('click', async () => {
@@ -678,11 +713,14 @@ processBtn.addEventListener('click', async () => {
 
   const semitones = document.getElementById('in-pitch').value;
   const timeFactor = (parseFloat(document.getElementById('in-time').value) / 100).toString();
+const formantFactor = (parseFloat(document.getElementById('in-formant').value) / 100).toString();
+
 
   const formData = new FormData();
   formData.append('audio', selectedFile);
   formData.append('semitones', semitones);
   formData.append('time_factor', timeFactor);
+  formData.append('formant_factor', formantFactor);
 
   try {
     const res = await fetch(API_BASE + '/api/process', { method: 'POST', body: formData });
@@ -691,7 +729,6 @@ processBtn.addEventListener('click', async () => {
       throw new Error(err.error || ('Server returned ' + res.status));
     }
     const data = await res.json();
-    lastResult = data;
     renderResult(data);
     setStatus('ready', 'done');
   } catch (err) {
@@ -704,20 +741,22 @@ processBtn.addEventListener('click', async () => {
 });
 
 function renderResult(data) {
-  screenPlaceholder.style.display = 'none';
-  spectroImg.classList.add('visible');
-  const activeTab = document.querySelector('.tab.active').dataset.tab;
-  const key = { original: 'original_spectrogram_base64', corrected: 'processed_spectrogram_base64', naive: 'naive_spectrogram_base64' }[activeTab];
-  spectroImg.src = 'data:image/png;base64,' + data[key];
   screenSr.textContent = data.sample_rate + ' Hz';
 
+  // spectrograms — all three shown at once, side by side
+  setSpectro('spectro-original', data.original_spectrogram_base64);
+  setSpectro('spectro-naive', data.naive_spectrogram_base64);
+  setSpectro('spectro-processed', data.processed_spectrogram_base64);
+
+  // audio
   const processedUrl = base64ToBlobUrl(data.processed_audio_base64, 'audio/wav');
   const naiveUrl = base64ToBlobUrl(data.naive_audio_base64, 'audio/wav');
 
-  const audioProcessed = document.getElementById('audio-processed');
-  const audioNaive = document.getElementById('audio-naive');
-  audioProcessed.src = processedUrl;
-  audioNaive.src = naiveUrl;
+  document.getElementById('audio-processed').src = processedUrl;
+  document.getElementById('audio-naive').src = naiveUrl;
+
+  document.getElementById('tag-processed').textContent = 'PHASE VOCODER';
+  document.getElementById('tag-naive').textContent = 'NAIVE';
 
   document.getElementById('dl-processed').href = processedUrl;
   document.getElementById('dl-naive').href = naiveUrl;
@@ -727,6 +766,15 @@ function renderResult(data) {
 
   drawRealWaveform(processedUrl, 'wave-processed');
   drawRealWaveform(naiveUrl, 'wave-naive');
+}
+
+function setSpectro(imgId, base64Png) {
+  if (!base64Png) return;
+  const img = document.getElementById(imgId);
+  const placeholder = img.nextElementSibling;
+  img.src = 'data:image/png;base64,' + base64Png;
+  img.classList.add('visible');
+  if (placeholder) placeholder.style.display = 'none';
 }
 </script>
 </body>

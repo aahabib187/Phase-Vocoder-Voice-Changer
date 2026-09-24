@@ -43,7 +43,10 @@ CORS(app)
 def index():
     return send_from_directory(FRONTEND_DIR, "index.html")
 
-TARGET_SR = 22050  # keep processing fast; plenty for voice
+# NOTE: max frequency shown in any spectrogram = TARGET_SR / 2 (Nyquist limit).
+# 44010 -> spectrograms cap out at ~22,005 Hz. Change to 44100 for the full
+# 0-20kHz look like the reference image, at the cost of slower processing.
+TARGET_SR = 44010  # keep processing fast; plenty for voice
 
 
 def audio_to_wav_base64(x: np.ndarray, sr: int) -> str:
@@ -57,9 +60,24 @@ def audio_to_wav_base64(x: np.ndarray, sr: int) -> str:
 
 
 def spectrogram_png_base64(x: np.ndarray, sr: int, title: str) -> str:
-    fig, ax = plt.subplots(figsize=(6, 3), dpi=110)
-    D = librosa.amplitude_to_db(np.abs(librosa.stft(x, n_fft=1024, hop_length=256)), ref=np.max)
-    img = librosa.display.specshow(D, sr=sr, hop_length=256, x_axis="time", y_axis="hz", ax=ax, cmap="magma")
+    fig, ax = plt.subplots(figsize=(8, 4), dpi=150)
+
+    # n_fft=2048 (up from 1024) gives finer frequency resolution -> sharper,
+    # thinner harmonic lines instead of blurred bands.
+    # hop_length=512 (up from 256) keeps the time axis proportionate to the
+    # bigger n_fft without generating an excessive number of frames.
+    D = librosa.amplitude_to_db(
+        np.abs(librosa.stft(x, n_fft=2048, hop_length=512)),
+        ref=np.max
+    )
+
+    # vmin/vmax clip the color range to a fixed 80dB window below peak.
+    # Without this, quiet background noise gets spread across the color
+    # scale too and the whole plot looks grainy/muddy instead of clean.
+    img = librosa.display.specshow(
+        D, sr=sr, hop_length=512, x_axis="time", y_axis="hz",
+        ax=ax, cmap="magma", vmin=-80, vmax=0
+    )
     ax.set_title(title, fontsize=10)
     fig.colorbar(img, ax=ax, format="%+2.0f dB")
     fig.tight_layout()
@@ -79,7 +97,7 @@ def process():
     file = request.files["audio"]
     semitones = float(request.form.get("semitones", 0))
     time_factor = float(request.form.get("time_factor", 1.0))
-
+    formant_factor = float(request.form.get("formant_factor", 1.0))
     try:
         x, sr = librosa.load(file, sr=TARGET_SR, mono=True)
     except Exception as e:
@@ -88,7 +106,7 @@ def process():
     if len(x) == 0:
         return jsonify({"error": "empty audio"}), 400
 
-    pv_result, naive_result = process_audio(x, semitones, time_factor)
+    pv_result, naive_result = process_audio(x, semitones, time_factor, formant_factor)
 
     response = {
         "sample_rate": sr,

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Phase Vocoder</title>
+<title>SpectraCraft</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=Manrope:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -368,8 +368,8 @@
   <div class="masthead">
     <div>
       <p class="kicker">Team Fourier &amp; Furious</p>
-      <h1>Phase Vocoder</h1>
-      <p class="tagline">Independent pitch &amp; time-scale control — without the chipmunk effect.</p>
+      <h1>SpectraCraft</h1>
+      <p class="tagline">STFT Phase Vocoder — independent pitch &amp; time-scale control without the chipmunk effect.</p>
     </div>
     <div class="status"><span class="dot" id="status-dot"></span><span id="status-text">idle</span></div>
   </div>
@@ -451,14 +451,14 @@
         </div>
 
         <div class="strip locked" id="strip-processed">
-          <div class="strip-head"><span class="strip-title">Phase vocoder</span><span class="strip-tag" id="tag-processed">—</span></div>
+          <div class="strip-head"><span class="strip-title">SpectraCraft</span><span class="strip-tag" id="tag-processed">—</span></div>
           <div class="waveform" id="wave-processed"></div>
           <div class="transport">
-            <button class="play-btn" id="play-processed" aria-label="Play phase vocoder output"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8V4z"/></svg></button>
+            <button class="play-btn" id="play-processed" aria-label="Play SpectraCraft output"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8V4z"/></svg></button>
             <div class="seek" id="seek-processed"><i id="seek-fill-processed"></i></div>
             <span class="time" id="time-processed">0:00 / 0:00</span>
           </div>
-          <div class="dl-row"><a class="dl" id="dl-processed" download="phase_vocoder_output.wav"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>Download WAV</a></div>
+          <div class="dl-row"><a class="dl" id="dl-processed" download="spectracraft_output.wav"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>Download WAV</a></div>
         </div>
 
       </div>
@@ -489,16 +489,16 @@
       <div id="viz-processed">
         <p class="viz-card-title">Phase-corrected</p>
         <div class="screen">
-          <img id="spectro-processed" alt="Phase vocoder spectrogram">
+          <img id="spectro-processed" alt="SpectraCraft spectrogram">
           <span class="screen-placeholder">waiting for audio</span>
         </div>
       </div>
 
     </div>
-    <div class="screen-caption"><span>0 – Nyquist</span><span>STFT · phase-locked reconstruction</span><span id="screen-sr">—</span></div>
+    <div class="screen-caption"><span>0 – Nyquist</span><span>Phase-locked reconstruction</span><span id="screen-sr">—</span></div>
   </div>
 
-  <footer>Baseline vs. phase-locked reconstruction, benchmarked on STFT analysis, phase unwrapping and propagation, and WOLA synthesis.</footer>
+  <footer>Baseline vs. phase-locked reconstruction · SpectraCraft Audio Engine</footer>
 
 </div>
 
@@ -507,7 +507,9 @@
 <audio id="audio-naive" preload="auto"></audio>
 
 <script>
-const API_BASE = "http://localhost:5000";
+const API_BASE = (window.location.origin && window.location.origin.startsWith("http"))
+  ? window.location.origin
+  : "http://127.0.0.1:5000";
 
 // ---------- element refs ----------
 const fileInput = document.getElementById('file-input');
@@ -755,7 +757,7 @@ function renderResult(data) {
   document.getElementById('audio-processed').src = processedUrl;
   document.getElementById('audio-naive').src = naiveUrl;
 
-  document.getElementById('tag-processed').textContent = 'PHASE VOCODER';
+  document.getElementById('tag-processed').textContent = 'SPECTRACRAFT';
   document.getElementById('tag-naive').textContent = 'NAIVE';
 
   document.getElementById('dl-processed').href = processedUrl;

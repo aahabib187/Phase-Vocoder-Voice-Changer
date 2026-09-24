@@ -1,5 +1,5 @@
 """
-Flask API for the Phase Vocoder Voice Changer.
+Flask API for SpectraCraft (Phase Vocoder Voice Changer).
 
 POST /api/process
   form-data:
@@ -28,8 +28,15 @@ import librosa
 import librosa.display
 import soundfile as sf
 import os
+import sys
+import threading
+import webbrowser
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
+
+BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+if BACKEND_DIR not in sys.path:
+    sys.path.insert(0, BACKEND_DIR)
 
 from phase_vocoder import process_audio, VOICE_PRESETS
 
@@ -113,7 +120,7 @@ def process():
         "processed_audio_base64": audio_to_wav_base64(pv_result, sr),
         "naive_audio_base64": audio_to_wav_base64(naive_result, sr),
         "original_spectrogram_base64": spectrogram_png_base64(x, sr, "Original"),
-        "processed_spectrogram_base64": spectrogram_png_base64(pv_result, sr, "Phase Vocoder (corrected)"),
+        "processed_spectrogram_base64": spectrogram_png_base64(pv_result, sr, "SpectraCraft (corrected)"),
         "naive_spectrogram_base64": spectrogram_png_base64(naive_result, sr, "Naive Resampling (baseline)"),
     }
     return jsonify(response)
@@ -129,5 +136,15 @@ def health():
     return jsonify({"status": "ok"})
 
 
+def open_browser():
+    try:
+        webbrowser.open("http://127.0.0.1:5000")
+    except Exception as e:
+        print(f"Could not open browser automatically: {e}")
+
+
 if __name__ == "__main__":
+    # Automatically open default browser (Edge / Chrome) on startup
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or not app.debug:
+        threading.Timer(1.2, open_browser).start()
     app.run(debug=True, port=5000)

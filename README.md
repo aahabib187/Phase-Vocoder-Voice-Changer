@@ -1,8 +1,8 @@
 
-# Phase Vocoder Voice Changer
+# SpectraCraft
 
-Independent pitch and time-scale modification via STFT phase analysis.
-CSE 220 project — Team Fourier_and_Furious (Subsection A2).
+High-fidelity voice pitch and time-scale modification via STFT phase analysis.
+CSE 220 project — Team Fourier & Furious (Subsection A2).
 
 ## Folder structure
 
@@ -33,24 +33,17 @@ phase-vocoder-voice-changer/
 
 ## Running it
 
-### Backend
+### Running the app
 
 ```bash
 cd backend
-python3 -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
+python -m venv venv
+.\venv\Scripts\activate          # Windows PowerShell / CMD
 pip install -r requirements.txt
 python app.py
 ```
 
-This starts the API at `http://localhost:5000`.
-
-### Frontend
-
-Just open `frontend/index.html` in a browser (or serve it with any static server,
-e.g. `python3 -m http.server 8000` from inside `frontend/`).
-
-Make sure the backend is running first — the frontend calls `http://localhost:5000/api/process`.
+This starts the server and automatically opens **SpectraCraft** in your default browser (Microsoft Edge or Google Chrome) at `http://127.0.0.1:5000`.
 
 ## Using the app
 
